@@ -1,0 +1,24 @@
+replicaCount: 1
+
+image:
+  repository: slepimis120/devops-shop-operator
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: shop-operator
+
+# Install CRDs
+installCRDs: true
