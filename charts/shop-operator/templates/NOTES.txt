@@ -1,0 +1,10 @@
+Shop Operator je uspešno instaliran!
+
+1. Čekaj da Deployment bude Ready:
+   kubectl get deployment -n {{ .Release.Namespace }} -l app=shop-operator -w
+
+2. Proveriti logs operatora:
+   kubectl logs -n {{ .Release.Namespace }} -l app=shop-operator -f
+
+3. Kreiraj prvi Shop resurs:
+   kubectl apply -f config/samples/shop_v1_shop.yaml

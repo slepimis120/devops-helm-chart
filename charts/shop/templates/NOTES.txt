@@ -1,0 +1,22 @@
+Shop aplikacija je uspešno instalirana!
+
+1. Proveriti status:
+
+   kubectl get pods -n {{ .Release.Namespace }}
+   kubectl get services -n {{ .Release.Namespace }}
+
+
+2. Pristupiti Shop aplikaciji:
+
+   {{- if .Values.ingress.enabled }}
+   http://{{ (index .Values.ingress.hosts 0).host }}
+   {{- else }}
+   kubectl port-forward -n {{ .Release.Namespace }} svc/shop 8080:{{ .Values.service.port }}
+   http://localhost:8080
+   {{- end }}
+
+3. Logovi aplikacije:
+   kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name=shop -f
+
+4. Restart aplikacije:
+   kubectl rollout restart deployment/shop -n {{ .Release.Namespace }}
