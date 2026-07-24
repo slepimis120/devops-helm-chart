@@ -1,0 +1,15 @@
+apiVersion: v2
+name: shophub
+description: Helm chart for ShopHub platform - dynamic shop management and deployment
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - shophub
+  - shop-management
+  - saas
+dependencies:
+  - name: kube-prometheus-stack
+    version: "51.0.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: monitoring.enabled

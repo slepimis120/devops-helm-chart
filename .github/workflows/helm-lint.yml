@@ -1,0 +1,45 @@
+name: Helm Lint and Validation
+
+on:
+  pull_request:
+    paths:
+      - 'charts/**'
+      - '.github/workflows/helm-lint.yml'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+      
+      - name: Add Prometheus Community Helm Repo
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+      
+      - name: Update Dependencies
+        run: |
+          helm dependency update ./charts/shophub
+      
+      - name: Lint shop-operator Chart
+        run: helm lint ./charts/shop-operator
+      
+      - name: Lint shop Chart
+        run: helm lint ./charts/shop
+      
+      - name: Lint shophub Chart
+        run: helm lint ./charts/shophub
+      
+      - name: Validate shop-operator Template
+        run: helm template shop-operator ./charts/shop-operator > /dev/null
+      
+      - name: Validate shop Template
+        run: helm template shop ./charts/shop > /dev/null
+      
+      - name: Validate shophub Template
+        run: helm template shophub ./charts/shophub > /dev/null
