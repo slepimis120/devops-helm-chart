@@ -4,17 +4,16 @@ metadata:
   name: {{ include "shop-operator.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: shop-operator
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- include "shop-operator.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: shop-operator
+      {{- include "shop-operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: shop-operator
+        {{- include "shop-operator.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       containers:

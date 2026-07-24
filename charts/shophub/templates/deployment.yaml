@@ -4,17 +4,16 @@ metadata:
   name: {{ include "shophub.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: shophub
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- include "shophub.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: shophub
+      {{- include "shophub.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: shophub
+        {{- include "shophub.selectorLabels" . | nindent 8 }}
     spec:
       containers:
       - name: shophub

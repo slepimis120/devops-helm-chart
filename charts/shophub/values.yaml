@@ -43,4 +43,3 @@ kube-prometheus-stack:
       retention: 30d
   grafana:
     enabled: true
-    adminPassword: "admin"

@@ -15,4 +15,11 @@ ShopHub platforma je uspešno instalirana!
 3. Pristupiti Grafana monitoring-u (ako je omogućen):
    kubectl port-forward -n {{ .Release.Namespace }} svc/kube-prometheus-stack-grafana 3000:80
    http://localhost:3000
-
+   
+   GRAFANA PRISTUP:
+   - Username: admin
+   - Password: postavi pri instalaciji pomoću:
+     helm install shophub ./charts/shophub \
+       --set kube-prometheus-stack.grafana.adminPassword=YOUR_SECURE_PASSWORD
+   
+   Ili ako već instaliran, promeni lozinku direktno u Grafani.
