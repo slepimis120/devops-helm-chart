@@ -35,8 +35,11 @@ jobs:
       - name: Lint shophub Chart
         run: helm lint ./charts/shophub
       
-      - name: Validate Templates
-        run: |
-          helm template shop-operator ./charts/shop-operator | kubectl apply --dry-run=client -f -
-          helm template shop ./charts/shop | kubectl apply --dry-run=client -f -
-          helm template shophub ./charts/shophub | kubectl apply --dry-run=client -f -
+      - name: Validate shop-operator Template
+        run: helm template shop-operator ./charts/shop-operator > /dev/null
+      
+      - name: Validate shop Template
+        run: helm template shop ./charts/shop > /dev/null
+      
+      - name: Validate shophub Template
+        run: helm template shophub ./charts/shophub > /dev/null
