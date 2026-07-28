@@ -1,0 +1,105 @@
+name: Helm CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/**'
+      - '.github/workflows/helm-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'charts/**'
+
+jobs:
+  helm-lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+      
+      - name: Add Prometheus Community Helm Repository
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+      
+      - name: Update Helm Chart Dependencies
+        run: |
+          helm dependency update ./charts/shophub
+      
+      - name: Lint shop-operator Chart
+        run: helm lint ./charts/shop-operator
+      
+      - name: Lint shop Chart
+        run: helm lint ./charts/shop
+      
+      - name: Lint shophub Chart
+        run: helm lint ./charts/shophub
+      
+      - name: Validate shop-operator Templates
+        run: |
+          helm template shop-operator ./charts/shop-operator > /dev/null
+          echo "✓ shop-operator templates valid"
+      
+      - name: Validate shop Templates
+        run: |
+          helm template shop ./charts/shop > /dev/null
+          echo "✓ shop templates valid"
+      
+      - name: Validate shophub Templates
+        run: |
+          helm template shophub ./charts/shophub > /dev/null
+          echo "✓ shophub templates valid"
+
+  helm-package:
+    runs-on: ubuntu-latest
+    needs: helm-lint
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+      
+      - name: Add Prometheus Community Helm Repository
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+      
+      - name: Update Dependencies
+        run: |
+          helm dependency update ./charts/shophub
+      
+      - name: Package Charts
+        run: |
+          mkdir -p ./packaged
+          helm package ./charts/shop-operator -d ./packaged
+          helm package ./charts/shop -d ./packaged
+          helm package ./charts/shophub -d ./packaged
+      
+      - name: Get Version
+        id: version
+        run: |
+          VERSION=$(git describe --tags --always --abbrev=7)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+      
+      - name: Upload Packaged Charts as Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: helm-charts-${{ steps.version.outputs.version }}
+          path: ./packaged/
+          retention-days: 30
