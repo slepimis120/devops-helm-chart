@@ -70,7 +70,7 @@ jobs:
           # (kube-prometheus-stack uses Prometheus CRDs that kubeconform doesn't know about)
           echo "Validating templates for ./charts/shophub (skipping Prometheus CRDs)"
           helm template shophub ./charts/shophub | kubeconform -strict -summary \
-            -skip-kinds Alertmanager,PrometheusRule,ServiceMonitor,Prometheus,PrometheusOperator,PodMonitor
+            -skip Alertmanager,PrometheusRule,ServiceMonitor,Prometheus,PrometheusOperator,PodMonitor
       
       - name: Check chart version bumped
         run: |
