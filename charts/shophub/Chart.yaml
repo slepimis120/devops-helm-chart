@@ -9,8 +9,10 @@ keywords:
   - shop-management
   - saas
 maintainers:
-  - name: Nemanja Simsic
-  - name: Katarina Spremic
+  - name: slepimis120
+    url: https://github.com/slepimis120
+  - name: s-katarina
+    url: https://github.com/s-katarina
 dependencies:
   - name: kube-prometheus-stack
     version: "51.0.0"
