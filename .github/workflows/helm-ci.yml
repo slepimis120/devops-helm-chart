@@ -60,10 +60,17 @@ jobs:
             curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz -C /usr/local/bin
           fi
           
-          for chart in shop shop-operator shophub; do
+          # Validate shop and shop-operator (standard K8s resources)
+          for chart in shop shop-operator; do
             echo "Validating templates for ./charts/$chart"
             helm template $chart ./charts/$chart | kubeconform -strict -summary
           done
+          
+          # Validate shophub with skipped custom resources
+          # (kube-prometheus-stack uses Prometheus CRDs that kubeconform doesn't know about)
+          echo "Validating templates for ./charts/shophub (skipping Prometheus CRDs)"
+          helm template shophub ./charts/shophub | kubeconform -strict -summary \
+            -skip-kinds Alertmanager,PrometheusRule,ServiceMonitor,Prometheus,PrometheusOperator,PodMonitor
       
       - name: Check chart version bumped
         run: |
