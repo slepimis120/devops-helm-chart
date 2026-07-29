@@ -37,6 +37,11 @@ jobs:
         with:
           version: 'v3.16.3'
       
+      - name: Add Prometheus Community Helm Repository
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+      
       - name: Update Helm Chart Dependencies
         run: |
           helm dependency build ./charts/shophub
@@ -84,6 +89,11 @@ jobs:
         uses: azure/setup-helm@v4
         with:
           version: 'v3.16.3'
+      
+      - name: Add Prometheus Community Helm Repository
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
       
       - name: Update Helm Chart Dependencies
         run: |
