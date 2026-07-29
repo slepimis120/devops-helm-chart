@@ -8,6 +8,9 @@ keywords:
   - shophub
   - shop-management
   - saas
+maintainers:
+  - name: Nemanja Simsic
+  - name: Katarina Spremic
 dependencies:
   - name: kube-prometheus-stack
     version: "51.0.0"
