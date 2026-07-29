@@ -37,6 +37,9 @@ jobs:
         with:
           version: 'v3.16.3'
       
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+      
       - name: Add Prometheus Community Helm Repository
         run: |
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -67,18 +70,12 @@ jobs:
           done
           
           # Validate shophub with skipped custom resources
-          # (kube-prometheus-stack uses Prometheus CRDs that kubeconform doesn't know about)
           echo "Validating templates for ./charts/shophub (skipping Prometheus CRDs)"
           helm template shophub ./charts/shophub | kubeconform -strict -summary \
             -skip Alertmanager,PrometheusRule,ServiceMonitor,Prometheus,PrometheusOperator,PodMonitor
       
       - name: Check chart version bumped
         run: |
-          # Install chart-testing if not available
-          if ! command -v ct &> /dev/null; then
-            curl -sL https://github.com/helm/chart-testing/releases/latest/download/chart-testing_linux_amd64.tar.gz | tar xz -C /usr/local/bin
-          fi
-          
           ct lint --check-version-increment --charts charts/shop,charts/shop-operator,charts/shophub
 
   helm-package:
