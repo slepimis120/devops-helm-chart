@@ -1,0 +1,129 @@
+name: Helm CI
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: helm-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/**'
+      - '.github/workflows/helm-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'charts/**'
+      - '.github/workflows/helm-ci.yml'
+
+jobs:
+  helm-lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.16.3'
+      
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+      
+      - name: Add Prometheus Community Helm Repository
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+      
+      - name: Update Helm Chart Dependencies
+        run: |
+          helm dependency build ./charts/shophub
+      
+      - name: Lint charts
+        run: |
+          for chart in shop shop-operator shophub; do
+            echo "Linting ./charts/$chart"
+            helm lint ./charts/$chart --strict
+          done
+      
+      - name: Validate chart templates with kubeconform
+        run: |
+          # Install kubeconform if not available
+          if ! command -v kubeconform &> /dev/null; then
+            curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz -C /usr/local/bin
+          fi
+          
+          # Validate shop and shop-operator (standard K8s resources)
+          for chart in shop shop-operator; do
+            echo "Validating templates for ./charts/$chart"
+            helm template $chart ./charts/$chart | kubeconform -strict -summary
+          done
+          
+          # Validate shophub with skipped custom resources
+          echo "Validating templates for ./charts/shophub (skipping Prometheus CRDs)"
+          helm template shophub ./charts/shophub | kubeconform -strict -summary \
+            -skip Alertmanager,PrometheusRule,ServiceMonitor,Prometheus,PrometheusOperator,PodMonitor
+      
+      - name: Check chart version bumped
+        run: |
+          ct lint --check-version-increment --charts charts/shop,charts/shop-operator,charts/shophub
+
+  helm-package:
+    runs-on: ubuntu-latest
+    needs: helm-lint
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.16.3'
+      
+      - name: Add Prometheus Community Helm Repository
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+      
+      - name: Update Helm Chart Dependencies
+        run: |
+          helm dependency build ./charts/shophub
+      
+      - name: Package Charts
+        run: |
+          mkdir -p ./packaged
+          helm package ./charts/shop-operator -d ./packaged
+          helm package ./charts/shop -d ./packaged
+          helm package ./charts/shophub -d ./packaged
+      
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+      
+      - name: Push charts to GHCR
+        run: |
+          for chart in ./packaged/*.tgz; do
+            echo "Pushing $chart to OCI registry"
+            helm push "$chart" "oci://ghcr.io/${{ github.repository_owner }}/charts"
+          done
+      
+      - name: Upload Packaged Charts as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-charts-${{ github.sha }}
+          path: ./packaged/
+          retention-days: 30

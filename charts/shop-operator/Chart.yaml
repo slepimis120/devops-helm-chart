@@ -4,8 +4,12 @@ description: Helm chart for deploying shop-operator and installing CRDs
 type: application
 version: 0.1.0
 appVersion: "0.1.0"
-
 keywords:
   - shop
   - operator
   - kubernetes
+maintainers:
+  - name: slepimis120
+    url: https://github.com/slepimis120
+  - name: s-katarina
+    url: https://github.com/s-katarina
