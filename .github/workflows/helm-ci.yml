@@ -116,9 +116,11 @@ jobs:
       
       - name: Push charts to GHCR
         run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           for chart in ./packaged/*.tgz; do
-            echo "Pushing $chart to OCI registry"
-            helm push "$chart" "oci://ghcr.io/${{ github.repository_owner }}/charts"
+            REF="oci://ghcr.io/${OWNER}/charts"
+            echo "Pushing $chart -> $REF"
+            helm push "$chart" "$REF"
           done
       
       - name: Upload Packaged Charts as Artifacts
