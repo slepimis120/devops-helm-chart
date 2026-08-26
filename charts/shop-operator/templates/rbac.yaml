@@ -21,6 +21,9 @@ rules:
   - apiGroups: ["shop.shophub.local"]
     resources: ["shops/finalizers", "discordchannels/finalizers", "wallets/finalizers"]
     verbs: ["update"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["create","delete","get","list","patch","update","watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
