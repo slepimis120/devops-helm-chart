@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: slepimis120/devops-shop-operator
   tag: "0.1.0"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 resources:
   limits:
