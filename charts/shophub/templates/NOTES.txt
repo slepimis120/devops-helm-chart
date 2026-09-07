@@ -1,25 +1,44 @@
 ShopHub platforma je uspešno instalirana!
 
 1. Proveriti status:
-   kubectl get deployment -n {{ .Release.Namespace }}
-   kubectl get services -n {{ .Release.Namespace }}
+   kubectl get deployment,svc,ingress -n {{ .Release.Namespace }}
+   {{- if .Values.postgresql.enabled }}
+   kubectl get cluster -n {{ .Release.Namespace }}   # CNPG baza
+   {{- end }}
 
 2. Pristupiti ShopHub aplikaciji:
    {{- if .Values.ingress.enabled }}
-   http://{{ (index .Values.ingress.hosts 0).host }}
+   http://{{ .Values.ingress.host }}
    {{- else }}
-   kubectl port-forward -n {{ .Release.Namespace }} svc/shophub 8080:{{ .Values.service.port }}
+   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "shophub.frontendName" . }} 8080:{{ .Values.service.port }}
    http://localhost:8080
    {{- end }}
 
-3. Pristupiti Grafana monitoring-u (ako je omogućen):
+   Front-end i back-end su na istom host-u: /api ide na back-end, sve ostalo na
+   front-end. Zato front-end ne dobija adresu back-enda -- browser je razrešava
+   sam, u odnosu na stranicu na kojoj je.
+
+3. Prodavnice se objavljuju na "<ime-prodavnice>.{{ .Values.shopBaseDomain }}",
+   u namespace-u "{{ .Values.shopNamespace }}".
+
+   VAŽNO: shop-operator mora biti pokrenut sa istim domenom
+   (shopBaseDomain={{ .Values.shopBaseDomain }}). Operator upisuje Ingress host,
+   ShopHub pravi link koji vlasnik otvara -- ako se razlikuju, link vodi na host
+   koji Ingress ne objavljuje.
+{{- if not .Values.auth.existingSecret }}
+
+4. UPOZORENJE: JWT ključ je generisan iz chart-a. Pod ArgoCD-om se pravi nov
+   ključ pri svakoj sinhronizaciji i svi korisnici bivaju odjavljeni. Napravi
+   Secret jednom i postavi auth.existingSecret:
+
+   kubectl create secret generic shophub-auth -n {{ .Release.Namespace }} \
+     --from-literal=JWT_SECRET="$(openssl rand -hex 32)"
+{{- end }}
+{{- if index .Values "kube-prometheus-stack" }}
+{{- if .Values.monitoring.enabled }}
+
+5. Grafana:
    kubectl port-forward -n {{ .Release.Namespace }} svc/kube-prometheus-stack-grafana 3000:80
-   http://localhost:3000
-   
-   GRAFANA PRISTUP:
-   - Username: admin
-   - Password: postavi pri instalaciji pomoću:
-     helm install shophub ./charts/shophub \
-       --set kube-prometheus-stack.grafana.adminPassword=YOUR_SECURE_PASSWORD
-   
-   Ili ako već instaliran, promeni lozinku direktno u Grafani.
+   http://localhost:3000  (admin / --set kube-prometheus-stack.grafana.adminPassword=...)
+{{- end }}
+{{- end }}

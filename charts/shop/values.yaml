@@ -1,3 +1,9 @@
+# Jedna prodavnica, deploy-ovana bez operatora.
+#
+# Ovo nije put kojim ide ShopHub: on kreira Shop custom resource, a operator iz
+# njega pravi Deployment-e, Service-e i Ingress (zahtev 3.1). Ovaj chart je tu
+# za rucni deploy -- da se isproba slika, ili u klasteru gde operator nije
+# instaliran.
 replicaCount: 2
 
 image:
@@ -14,7 +20,10 @@ ingress:
   enabled: false
   className: "nginx"
   hosts:
-    - host: shop.local
+    # Browser sam razresava svako ime pod `localhost` na loopback adresu, pa
+    # ovde ne treba DNS zapis ni upis u hosts fajl. Drzati u skladu sa
+    # `shopBaseDomain` iz shop-operator chart-a.
+    - host: shop.localhost
       paths:
         - path: /
           pathType: Prefix
