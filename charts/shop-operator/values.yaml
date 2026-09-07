@@ -1,4 +1,5 @@
 replicaCount: 1
+shopBaseDomain: localhost
 
 image:
   repository: slepimis120/devops-shop-operator
