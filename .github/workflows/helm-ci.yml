@@ -72,7 +72,7 @@ jobs:
           # Validate shophub with skipped custom resources
           echo "Validating templates for ./charts/shophub (skipping Prometheus CRDs)"
           helm template shophub ./charts/shophub | kubeconform -strict -summary \
-            -skip Alertmanager,PrometheusRule,ServiceMonitor,Prometheus,PrometheusOperator,PodMonitor
+            -skip Alertmanager,PrometheusRule,ServiceMonitor,Prometheus,PrometheusOperator,PodMonitor,Cluster
       
       - name: Check chart version bumped
         run: |

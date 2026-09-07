@@ -1,10 +1,40 @@
 # ShopHub aplikacija
-replicaCount: 2
+#
+# Front-end i back-end idu pod jedan host: Ingress salje /api na back-end, sve
+# ostalo na front-end. To je isti oblik koji shop-operator daje svakoj
+# prodavnici, i zbog njega front-end ne dobija adresu back-enda -- browser je
+# razresava sam, u odnosu na stranicu na kojoj je.
 
-image:
-  repository: slepimis120/devops-shophub
-  tag: "0.1.0"
-  pullPolicy: IfNotPresent
+nameOverride: ""
+fullnameOverride: ""
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: slepimis120/devops-shophub-frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+backend:
+  replicaCount: 2
+  image:
+    repository: slepimis120/devops-shophub-backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
 
 service:
   type: ClusterIP
@@ -14,26 +44,46 @@ service:
 ingress:
   enabled: true
   className: "nginx"
-  hosts:
-    - host: shophub.local
-      paths:
-        - path: /
-          pathType: Prefix
+  # Jedan host za obe polovine, pa je ovo skalar a ne lista: putanje odredjuje
+  # chart, ne vrednosti.
+  host: shophub.localhost
   tls: []
 
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 250m
-    memory: 256Mi
+# Domen pod kojim se objavljuju prodavnice koje ShopHub kreira.
+#
+# Mora biti jednak `shopBaseDomain` u shop-operator chart-u: operator upisuje
+# Ingress host, a ShopHub pravi link koji vlasnik otvara iz dashboard-a. Ako se
+# razlikuju, prodavnica radi ali link vodi na host koji Ingress ne objavljuje.
+shopBaseDomain: localhost
 
-nodeSelector: {}
-tolerations: []
-affinity: {}
+# Namespace u kojem se kreiraju Shop resursi. ShopHub dobija prava nad shops
+# samo u ovom namespace-u.
+shopNamespace: default
+
+auth:
+  # Ime postojeceg Secret-a sa JWT_SECRET. Jedina opcija koja se dobro ponasa
+  # pod ArgoCD-om: on renderuje chart bez pristupa klasteru, pa bi generisan
+  # kljuc bio nov pri svakoj sinhronizaciji i odjavio bi sve korisnike.
+  #
+  #   kubectl create secret generic shophub-auth -n shophub \
+  #     --from-literal=JWT_SECRET="$(openssl rand -hex 32)"
+  existingSecret: ""
+  # Koristi se kad je existingSecret prazan. Ako je i ovo prazno, chart
+  # generise kljuc -- u redu za `helm install`, nije za ArgoCD.
+  jwtSecret: ""
+  expiresIn: 1h
+
+# ShopHub-ova sopstvena baza: nalozi i spisak prodavnica po korisniku.
+# Deploy-uje je CNPG, isti operator koji koristi `standard` prodavnica.
+postgresql:
+  enabled: true
+  storage: 1Gi
 
 # Monitoring sa Prometheus
+#
+# Klaster ga instalira kao zasebnu ArgoCD aplikaciju, pa je ovde iskljucen da ne
+# bi bila dva Prometheus operatora i dve kopije CRD-ova. Zavisnost ostaje
+# deklarisana u Chart.yaml (zahtev 3.3).
 monitoring:
   enabled: true
 

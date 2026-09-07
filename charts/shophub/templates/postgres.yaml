@@ -1,0 +1,19 @@
+{{- if .Values.postgresql.enabled }}
+{{/*
+ShopHub's own database -- the accounts, and which shops each user owns. Not
+deployed by this chart directly: CNPG is, the same operator a `standard` shop's
+database uses. It publishes the credentials in a secret named after this Cluster
+with `-app`, which is where the backend reads them from.
+*/}}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "shophub.databaseName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "shophub.labels" . | nindent 4 }}
+spec:
+  instances: 1
+  storage:
+    size: {{ .Values.postgresql.storage | quote }}
+{{- end }}
