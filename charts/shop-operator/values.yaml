@@ -20,6 +20,3 @@ rbac:
 serviceAccount:
   create: true
   name: shop-operator
-
-# Install CRDs
-installCRDs: true
