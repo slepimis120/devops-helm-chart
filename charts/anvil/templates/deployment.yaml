@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "anvil.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "anvil.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "anvil.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "anvil.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: anvil
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        # Foundry slika ocekuje celu komandu kao jedan string, pa `anvil` ide
+        # kao argument entrypoint-a, a ne kao zaseban `command`.
+        args:
+        - >-
+          anvil
+          --host {{ .Values.anvil.host }}
+          --port {{ .Values.anvil.port }}
+          --chain-id {{ .Values.anvil.chainId }}
+          --accounts {{ .Values.anvil.accounts }}
+          --balance {{ .Values.anvil.balance }}
+          {{- range .Values.anvil.extraArgs }} {{ . }}{{- end }}
+        ports:
+        - name: rpc
+          containerPort: {{ .Values.anvil.port }}
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        # Anvil nema health endpoint, ali odgovara na JSON-RPC cim je podignut,
+        # pa je otvoren TCP port dovoljan signal da lanac prima transakcije.
+        livenessProbe:
+          tcpSocket:
+            port: rpc
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: rpc
+          initialDelaySeconds: 3
+          periodSeconds: 10
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -24,6 +24,8 @@ spec:
           {{- toYaml .Values.resources | nindent 12 }}
         args:
         - --shop-base-domain={{ .Values.shopBaseDomain }}
+        - --rpc-url={{ .Values.chain.rpcUrl }}
+        - --chain-id={{ .Values.chain.id }}
         livenessProbe:
           httpGet:
             path: /healthz

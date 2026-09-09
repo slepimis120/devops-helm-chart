@@ -51,7 +51,7 @@ jobs:
       
       - name: Lint charts
         run: |
-          for chart in shop shop-operator shophub; do
+          for chart in anvil shop shop-operator shophub; do
             echo "Linting ./charts/$chart"
             helm lint ./charts/$chart --strict
           done
@@ -64,7 +64,7 @@ jobs:
           fi
           
           # Validate shop and shop-operator (standard K8s resources)
-          for chart in shop shop-operator; do
+          for chart in anvil shop shop-operator; do
             echo "Validating templates for ./charts/$chart"
             helm template $chart ./charts/$chart | kubeconform -strict -summary
           done
@@ -76,7 +76,7 @@ jobs:
       
       - name: Check chart version bumped
         run: |
-          ct lint --check-version-increment --charts charts/shop,charts/shop-operator,charts/shophub
+          ct lint --check-version-increment --charts charts/anvil,charts/shop,charts/shop-operator,charts/shophub
 
   helm-package:
     runs-on: ubuntu-latest
@@ -106,6 +106,7 @@ jobs:
       - name: Package Charts
         run: |
           mkdir -p ./packaged
+          helm package ./charts/anvil -d ./packaged
           helm package ./charts/shop-operator -d ./packaged
           helm package ./charts/shop -d ./packaged
           helm package ./charts/shophub -d ./packaged
