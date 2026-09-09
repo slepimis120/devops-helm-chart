@@ -3,7 +3,9 @@ shopBaseDomain: localhost
 
 image:
   repository: slepimis120/devops-shop-operator
-  tag: "0.1.0"
+  # Jednako `appVersion` u Chart.yaml: oba opisuju binar operatora, ne chart.
+  # Objavljuje ga tag `v0.6.0` u shop-operator repou
+  tag: "0.6.0"
   pullPolicy: Always
 
 resources:
@@ -20,6 +22,3 @@ rbac:
 serviceAccount:
   create: true
   name: shop-operator
-
-# Install CRDs
-installCRDs: true

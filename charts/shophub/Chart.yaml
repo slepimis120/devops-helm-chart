@@ -2,8 +2,12 @@ apiVersion: v2
 name: shophub
 description: Helm chart for ShopHub platform - dynamic shop management and deployment
 type: application
-version: 0.2.0
-appVersion: "0.1.0"
+version: 0.3.0
+# Verzija same aplikacije, ne chart-a. Ne bira sliku, to rade
+# frontend.image.tag i backend.image.tag, ali zavrsava kao
+# app.kubernetes.io/version na svakom resursu i kao APP VERSION u `helm ls`.
+# Zato prati najnoviju objavljenu ShopHub sliku.
+appVersion: "0.2.1"
 keywords:
   - shophub
   - shop-management

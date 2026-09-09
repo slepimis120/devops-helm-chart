@@ -52,7 +52,7 @@ spec:
                   key: JWT_SECRET
             - name: JWT_EXPIRES_IN
               value: {{ .Values.auth.expiresIn | quote }}
-            {{- if .Values.postgresql.enabled }}
+            {{- if .Values.database.enabled }}
             # CNPG generates the password and publishes every credential in a
             # secret named after the Cluster, so nothing here has to know it.
             - name: DB_HOST

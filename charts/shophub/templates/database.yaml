@@ -1,4 +1,4 @@
-{{- if .Values.postgresql.enabled }}
+{{- if .Values.database.enabled }}
 {{/*
 ShopHub's own database -- the accounts, and which shops each user owns. Not
 deployed by this chart directly: CNPG is, the same operator a `standard` shop's
@@ -15,5 +15,5 @@ metadata:
 spec:
   instances: 1
   storage:
-    size: {{ .Values.postgresql.storage | quote }}
+    size: {{ .Values.database.storage | quote }}
 {{- end }}

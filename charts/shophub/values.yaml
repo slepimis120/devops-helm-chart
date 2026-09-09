@@ -12,7 +12,7 @@ frontend:
   replicaCount: 2
   image:
     repository: slepimis120/devops-shophub-frontend
-    tag: "latest"
+    tag: "0.2.1"
     pullPolicy: IfNotPresent
   resources:
     limits:
@@ -26,7 +26,7 @@ backend:
   replicaCount: 2
   image:
     repository: slepimis120/devops-shophub-backend
-    tag: "latest"
+    tag: "0.2.0"
     pullPolicy: IfNotPresent
   resources:
     limits:
@@ -44,8 +44,6 @@ service:
 ingress:
   enabled: true
   className: "nginx"
-  # Jedan host za obe polovine, pa je ovo skalar a ne lista: putanje odredjuje
-  # chart, ne vrednosti.
   host: shophub.localhost
   tls: []
 
@@ -75,15 +73,14 @@ auth:
 
 # ShopHub-ova sopstvena baza: nalozi i spisak prodavnica po korisniku.
 # Deploy-uje je CNPG, isti operator koji koristi `standard` prodavnica.
-postgresql:
+#
+# Kljuc je `database`, ne `postgresql`: vrednosti subchart-a zive pod kljucem
+# jednakim imenu subchart-a, pa bi `postgresql:` postao Bitnami-jev cim bi se
+# takav dependency dodao.
+database:
   enabled: true
   storage: 1Gi
 
-# Monitoring sa Prometheus
-#
-# Klaster ga instalira kao zasebnu ArgoCD aplikaciju, pa je ovde iskljucen da ne
-# bi bila dva Prometheus operatora i dve kopije CRD-ova. Zavisnost ostaje
-# deklarisana u Chart.yaml (zahtev 3.3).
 monitoring:
   enabled: true
 

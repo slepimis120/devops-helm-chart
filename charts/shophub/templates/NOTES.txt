@@ -2,7 +2,7 @@ ShopHub platforma je uspešno instalirana!
 
 1. Proveriti status:
    kubectl get deployment,svc,ingress -n {{ .Release.Namespace }}
-   {{- if .Values.postgresql.enabled }}
+   {{- if .Values.database.enabled }}
    kubectl get cluster -n {{ .Release.Namespace }}   # CNPG baza
    {{- end }}
 
