@@ -1,0 +1,53 @@
+# Anvil -- lokalni EVM lanac na kojem kupci placu porudzbine.
+#
+# Jedna replika, bez PVC-a: stanje lanca je namerno prolazno. Restart Anvil-a
+# znaci prazan lanac, pa i MetaMask mora da obrise istoriju naloga
+# (Settings -> Advanced -> Clear activity tab data), inace salje transakcije sa
+# nonce-om iz mrtvog lanca.
+#
+# Za javni testnet (Sepolia) ovaj chart se ne instalira -- umesto toga se u
+# shop-operator chart-u `chain.rpcUrl` i `chain.id` usmere na taj RPC.
+replicaCount: 1
+
+image:
+  repository: ghcr.io/foundry-rs/foundry
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# Anvil podrazumevano slusa na 127.0.0.1, sto u kontejneru znaci da mu niko
+# spolja ne moze prici; `--host 0.0.0.0` je zato obavezan.
+#
+# `--chain-id` mora da se poklapa sa `chain.id` u shop-operator chart-u i sa
+# mrezom koju je kupac dodao u MetaMask.
+anvil:
+  host: 0.0.0.0
+  port: 8545
+  chainId: 31337
+  # Deterministicki nalozi iz standardne fraze
+  # "test test test test test test test test test test test junk".
+  # Nalog #0 je kupac, nalog #1 moze da bude adresa prodavnice.
+  accounts: 10
+  # Pocetno stanje svakog naloga, u celim ETH.
+  balance: 10000
+  # Dodatni argumenti, npr. ["--block-time", "1"] ako je potrebno da lanac
+  # sam proizvodi blokove (za PAYMENT_CONFIRMATIONS > 0).
+  extraArgs: []
+
+service:
+  type: ClusterIP
+  port: 8545
+
+# Browser kupca ne moze da dosegne ClusterIP. Za demo se koristi
+# `kubectl port-forward svc/anvil 8545:8545`, pa MetaMask i dalje gleda u
+# http://127.0.0.1:8545 -- ista mreza radi i lokalno i nad klasterom.
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

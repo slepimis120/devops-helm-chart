@@ -1,13 +1,14 @@
 apiVersion: v2
-name: shop-operator
-description: Helm chart for deploying shop-operator and installing CRDs
+name: anvil
+description: Anvil (Foundry) razvojni EVM lanac na kojem prodavnice naplacuju
 type: application
 version: 1.0.0
-appVersion: "1.0.0"
+appVersion: "latest"
 keywords:
-  - shop
-  - operator
-  - kubernetes
+  - anvil
+  - foundry
+  - ethereum
+  - testnet
 maintainers:
   - name: slepimis120
     url: https://github.com/slepimis120

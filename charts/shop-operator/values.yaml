@@ -1,11 +1,25 @@
 replicaCount: 1
 shopBaseDomain: localhost
 
+# Lanac na kojem sve prodavnice u klasteru naplacuju.
+#
+# Ovo su podesavanja operatora, a ne polja u Shop resursu: lanac je osobina
+# klastera, sve prodavnice u jednom deployment-u koriste isti.
+chain:
+  # Gde *backend* prodavnice proverava uplate. Service ime, dostupno samo
+  # unutar klastera -- novcanik kupca ima svoju vezu ka lancu i ovo nikad ne
+  # vidi. Menja se na URL javnog testnet-a (npr. Sepolia RPC) po potrebi.
+  rpcUrl: http://anvil.default.svc.cluster.local:8545
+  # Anvil-ov chain id. Mora da se poklapa sa mrezom koju je kupac dodao u
+  # MetaMask, jer prodavnica trazi od novcanika da prebaci na nju.
+  # Sepolia bi bila 11155111.
+  id: "31337"
+
 image:
   repository: slepimis120/devops-shop-operator
   # Jednako `appVersion` u Chart.yaml: oba opisuju binar operatora, ne chart.
-  # Objavljuje ga tag `v0.6.0` u shop-operator repou
-  tag: "0.6.0"
+  # Objavljuje ga tag `v1.0.0` u shop-operator repou
+  tag: "1.0.0"
   pullPolicy: Always
 
 resources:

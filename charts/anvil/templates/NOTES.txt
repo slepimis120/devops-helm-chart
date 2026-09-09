@@ -1,0 +1,33 @@
+Anvil je podignut kao {{ include "anvil.fullname" . }}, chain id {{ .Values.anvil.chainId }}.
+
+Backend prodavnice ga vidi na:
+
+    http://{{ include "anvil.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+Ta adresa ide u `chain.rpcUrl` shop-operator chart-a.
+
+MetaMask radi u browseru kupca i ne moze da dosegne ClusterIP, pa mu treba
+tunel do lanca:
+
+    kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "anvil.fullname" . }} 8545:{{ .Values.service.port }}
+
+Mreza u MetaMask-u (Add network manually):
+
+    RPC URL:   http://127.0.0.1:8545
+    Chain ID:  {{ .Values.anvil.chainId }}
+    Symbol:    ETH
+
+Nalozi su deterministicki, iz fraze
+"test test test test test test test test test test test junk",
+svaki sa {{ .Values.anvil.balance }} ETH. Nalog #0 je kupac:
+
+    adresa: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+    kljuc:  0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+U MetaMask ide preko "Import account -> Private key", NE preko fraze --
+uvoz fraze zamenjuje ceo postojeci novcanik.
+
+Posle svakog restarta Anvil-a lanac je prazan, a MetaMask i dalje pamti
+nonce-ove sa starog. Obrisati ih u
+Settings -> Advanced -> Clear activity tab data, inace transakcije padaju
+sa "nonce too high".
